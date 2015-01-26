@@ -13,37 +13,37 @@
 -export([]).
 
 start(ProgramName) ->
-  spawn(?MODULE, init, [ProgramName]).
+  spawn(?MODULE, init, [ProgramName]). % spawnuje funkcje inicjalizujaco program
 
-init(ProgramName) ->
+init(ProgramName) -> % inicjalizacja programu: zarejestrowanie procesu, otwarcie portu, loopowanie
   register(problem, self()),
   process_flag(trap_exit, true),
-  Port = open_port({spawn, ProgramName}, [{packet, 2}]),
-  loop(Port).
+  Port = open_port({spawn, ProgramName}, [{packet, 2}]), % kluczowa linijka - otwarcie portu, pakiety 2-bajtowe
+  loop(Port). % wejscie w petle
 
-multiplicate(Num) ->
+multiplicate(Num) -> % funkcja mnozaca wywolywane przez port
   call_port({multiplicate, Num}).
-divide(Num) ->
+divide(Num) -> % funkcja dzielaca wywolywana przez port
   call_port({divide, Num}).
 
-call_port(Msg) ->
+call_port(Msg) -> % wezwanie portu, wyslanie do procesu portowego podanej wiadomosci
   problem ! {call, self(), Msg},
   receive
-    {problem, Result} -> Result
+    {problem, Result} -> Result % odebranie wyniku od procesu portowego
   end.
 
-loop(Port) ->
+loop(Port) -> % port - nasluchuje wiadomosci i wywoluje odpowiednie wiadomosci
   receive
     {call, Caller, Msg} ->
-      Port ! {self(), {command, encode(Msg)}},
+      Port ! {self(), {command, encode(Msg)}}, % wyslanie do portu zakodowanego Msg
       receive
         {Port, {data, Data}} ->
-          Caller ! {complex, decode(Data)}
+          Caller ! {complex, decode(Data)} % wyslanie zdekodowanego wyniku
       end,
       loop(Port)
   end.
 
-encode({multiplicate, Num}) -> [1, Num];
+encode({multiplicate, Num}) -> [1, Num]; % proste enkodery funkcji
 encode({divide, Num}) -> [2, Num].
 
-decode([Int]) -> Int.
+decode([Int]) -> Int.     % prosty dekoder wyniku
