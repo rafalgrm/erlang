@@ -10,7 +10,7 @@
 -author("rafal_000").
 
 %% API
--export([]).
+-export([start/1, init/1, multiplicate/1, divide/1, call_port/1]).
 
 start(ProgramName) ->
   spawn(?MODULE, init, [ProgramName]). % spawnuje funkcje inicjalizujaco program
